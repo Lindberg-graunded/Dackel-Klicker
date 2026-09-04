@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dackel-Klicker</title>
+<style>
+body{margin:0;background:#f6dfb4;font-family:Arial,sans-serif;color:#4b2b17;text-align:center}
+main{max-width:600px;margin:auto;padding:16px}.box{background:#fff8e9;border:3px solid #6f431f;border-radius:22px;padding:18px;margin:12px 0}
+h1{margin:4px}.score{font-size:30px;font-weight:bold}
+#dog{font-size:150px;border:0;background:none;cursor:pointer;touch-action:manipulation;user-select:none}
+#dog:active{transform:scale(.88)}button.buy{padding:12px;border:0;border-radius:12px;background:#d88932;color:white;font-weight:bold}
+.item{display:flex;justify-content:space-between;align-items:center;background:#f2dfbd;padding:10px;margin:8px;border-radius:14px}
+#gold{display:none;background:#ffe36e;padding:12px;border-radius:14px;font-weight:bold}
+</style>
+</head>
+<body>
+<main>
+<div class="box"><h1>🐶 Dackel-Klicker</h1><div class="score">🦴 <span id="bones">0</span></div></div>
+<div class="box">
+<div id="gold">✨ GOLDENER DACKEL! ✨<br>Drück schnell drauf!</div>
+<button id="dog">🐶</button>
+<p>Klicks: <b id="clicks">0</b> · Pro Klick: <b id="power">1</b></p>
+</div>
+<div class="box"><h2>🛒 Shop</h2>
+<div class="item"><span>🦴 Stärkerer Klick<br><small>+1 pro Klick</small></span><button class="buy" id="b1"></button></div>
+<div class="item"><span>🧺 Knochenkorb<br><small>+1 Knochen/Sekunde</small></span><button class="buy" id="b2"></button></div>
+<div class="item"><span>💥 Mega-Leckerli<br><small>×2 Klickstärke</small></span><button class="buy" id="b3"></button></div>
+</div>
+<div class="box">🏆 Beste Knochenzahl: <b id="best">0</b></div>
+</main>
+<script>
+let s=JSON.parse(localStorage.getItem("dackel")||"null")||{bones:0,clicks:0,power:1,auto:0,best:0,l1:0,l2:0,l3:0,multi:1};
+const el=id=>document.getElementById(id);
+function cost(t){return t==="a"?Math.floor(20*1.55**s.l1):t==="b"?Math.floor(50*1.7**s.l2):Math.floor(300*3**s.l3)}
+function save(){localStorage.setItem("dackel",JSON.stringify(s))}
+function draw(){
+ el("bones").textContent=Math.floor(s.bones);el("clicks").textContent=s.clicks;el("power").textContent=s.power*s.multi;el("best").textContent=Math.floor(s.best);
+ [["b1","a"],["b2","b"],["b3","c"]].forEach(([id,t])=>{let c=cost(t);el(id).textContent="🦴 "+c;el(id).disabled=s.bones<c})
+}
+el("dog").addEventListener("click",()=>{
+ let n=s.power*s.multi;s.bones+=n;s.clicks++;s.best=Math.max(s.best,s.bones);save();draw();
+ if(Math.random()<.015){el("gold").style.display="block";setTimeout(()=>el("gold").style.display="none",5000)}
+});
+el("gold").addEventListener("click",()=>{s.bones+=100;s.best=Math.max(s.best,s.bones);el("gold").style.display="none";save();draw()});
+el("b1").onclick=()=>{let c=cost("a");if(s.bones>=c){s.bones-=c;s.power++;s.l1++;save();draw()}};
+el("b2").onclick=()=>{let c=cost("b");if(s.bones>=c){s.bones-=c;s.auto++;s.l2++;save();draw()}};
+el("b3").onclick=()=>{let c=cost("c");if(s.bones>=c){s.bones-=c;s.multi*=2;s.l3++;save();draw()}};
+setInterval(()=>{if(s.auto){s.bones+=s.auto;s.best=Math.max(s.best,s.bones);save();draw()}},1000);
+draw();
+</script>
+</body>
+</html>
